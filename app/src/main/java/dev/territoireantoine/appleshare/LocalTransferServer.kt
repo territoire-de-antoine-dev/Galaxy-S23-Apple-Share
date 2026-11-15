@@ -76,15 +76,15 @@ class LocalTransferServer(private val context: Context) {
                 val method = parts[0]
                 val path = parts[1].substringBefore('?')
                 val headers = mutableMapOf<String, String>()
-                repeat(40) {
+                var headerCount = 0
+                while (true) {
                     val line = readLine(input) ?: return@use
-                    if (line.isEmpty()) return@repeat
+                    if (line.isEmpty()) break
+                    if (++headerCount > 40) return@use
                     val split = line.indexOf(':')
                     if (split > 0) headers[line.substring(0, split).lowercase(Locale.US)] =
                         line.substring(split + 1).trim()
                 }
-                // Headers end at first empty line. readHeaders() below is preferred for
-                // request bodies, and intentionally handles no chunked transfer encoding.
                 route(method, path, headers, input, output)
             } catch (_: Exception) {
                 // Bad clients do not crash the transfer service.
@@ -136,8 +136,9 @@ class LocalTransferServer(private val context: Context) {
         val filename = try {
             URLDecoder.decode(headers["x-file-name"] ?: "fichier", "UTF-8")
         } catch (_: Exception) { "fichier" }
-        val clean = filename.replace(Regex("[/\\\\\\x00-\\x1F]"), "_")
-            .trim().take(120).ifEmpty { "fichier" }
+        val clean = filename.map { ch ->
+            if (ch.isLetterOrDigit() || ch in " ._-()") ch else '_'
+        }.joinToString("").trim().take(120).ifEmpty { "fichier" }
         val pending = TransferState.requestApproval(clean, length)
         if (pending == null) { sendText(output, 409, "text/plain", "Une autre demande est en cours"); return }
         val approved = try { pending.decision.get(75, TimeUnit.SECONDS) }
