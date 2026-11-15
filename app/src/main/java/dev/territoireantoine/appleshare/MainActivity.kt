@@ -85,7 +85,8 @@ private fun ShareScreen() {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()\n            .verticalScroll(rememberScrollState()).padding(20.dp),
+        modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()
+            .verticalScroll(rememberScrollState()).padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
