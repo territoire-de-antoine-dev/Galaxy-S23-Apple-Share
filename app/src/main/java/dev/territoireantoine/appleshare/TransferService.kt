@@ -1,6 +1,7 @@
 package dev.territoireantoine.appleshare
 
 import android.app.Notification
+import android.app.PendingIntent
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -28,10 +29,14 @@ class TransferService : Service() {
             stopSelf()
             return START_NOT_STICKY
         }
+        val openApp = PendingIntent.getActivity(this, 101,
+            Intent(this, MainActivity::class.java),
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val notification = Notification.Builder(this, CHANNEL_ID)
             .setContentTitle("OpenDrop S23")
             .setContentText("Partage local actif. Arrêtez-le depuis l'application.")
             .setSmallIcon(android.R.drawable.stat_sys_upload)
+            .setContentIntent(openApp)
             .setOngoing(true)
             .build()
         startForeground(101, notification)
